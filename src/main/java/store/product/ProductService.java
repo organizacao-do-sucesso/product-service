@@ -16,6 +16,7 @@ public class ProductService {
     private ProductRepository productRepository;
 
     public Product create(Product product) {
+        validate(product);
         return productRepository.save(new ProductModel(product)).to();
     }
 
@@ -36,5 +37,20 @@ public class ProductService {
         return StreamSupport.stream(productRepository.findAll().spliterator(), false)
             .map(ProductModel::to)
             .toList();
+    }
+
+    private void validate(Product product) {
+        if (product == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product is required");
+        }
+        if (product.name() == null || product.name().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name is required");
+        }
+        if (product.price() == null || product.price().compareTo(BigDecimal.ZERO) < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Price must be zero or greater");
+        }
+        if (product.unit() == null || product.unit().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unit is required");
+        }
     }
 }
